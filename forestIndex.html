@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Forest</title>
+    <style>
+        body {margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+  <script type = "module">
+
+// Student Name: Shawn Wen
+// Student Number: 5144988
+// Professor: George Vanoyen
+
+// About Code:
+// This program creates a forest that generates trees, flowers, and bushes procedurely graphically.
+
+
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+//____________________________________________________________________________________________________
+// Set up Block where the scene, renderer, skybox, etc are defined
+// Scene and camera
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+camera.position.set(0, 15, 40);
+
+// Renderer
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Skybox
+const loader = new THREE.CubeTextureLoader();
+const ft = new THREE.TextureLoader().load("purplenebula_ft.jpg");
+const bk = new THREE.TextureLoader().load("purplenebula_bk.jpg");
+const up = new THREE.TextureLoader().load("purplenebula_up.jpg");
+const dn = new THREE.TextureLoader().load("purplenebula_dn.jpg");
+const rt = new THREE.TextureLoader().load("purplenebula_rt.jpg");
+const lf = new THREE.TextureLoader().load("purplenebula_lf.jpg");
+const skybox = loader.load([ft, bk, up, dn, rt, lf]);
+// Sets the background to light blue
+scene.background = new THREE.Color(0x87CEEB); 
+
+
+// Lighting Section
+// Sets the ambient light to white having an intensity of 0.6
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+// Sets directional light to white hacing an intensityh of 1 or full strength
+const directionalLight = new THREE.DirectionalLight(0xffffff,1);
+directionalLight.position.set(50,100,50);
+scene.add(directionalLight);
+
+// Terrain Section
+const textureLoader = new THREE.TextureLoader();
+const grassTexture = textureLoader.load("https://raw.githubusercontent.com/mrdoob/three.js/refs/heads/dev/examples/textures/terrain/grasslight-big.jpg");
+
+// Configures the texture wrapping for the vertical and horizontal behavior
+grassTexture.wrapS = THREE.RepeatWrapping;
+grassTexture.wrapT = THREE.RepeatWrapping;
+grassTexture.repeat.set(25,25);
+
+// Ground Shape (the surface where the trees, flowers, and bushes will be on)
+const groundShape = new THREE.PlaneGeometry(500, 500);
+const groundFace = new THREE.MeshStandardMaterial({map: grassTexture});
+const ground = new THREE.Mesh(groundShape, groundFace);
+
+// Rotates the ground facing horizontally. If this line is removed, the "ground" will appear vertically
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+//____________________________________________________________________________________________________
+
+//====================================================================================================
+// Tree Creation Section
+function makeTree(){
+    // Trunk of the tree
+    const trunkShape = new THREE.CylinderGeometry(0.5, 0.8, 10, 10);
+    const trunkFace = new THREE.MeshStandardMaterial({color:0x8B4513});
+    const trunk = new THREE.Mesh(trunkShape, trunkFace);
+
+    // Leaves
+    const leavesShape = new THREE.ConeGeometry(3, 6, 8);
+    const leavesFace = new THREE.MeshStandardMaterial({color:0x1f7a1f});
+    const leaves = new THREE.Mesh(leavesShape, leavesFace);
+    leaves.position.y = 5;
+
+    // Tree group
+    const tree = new THREE.Group();
+    tree.add(trunk);
+    tree.add(leaves);
+    return tree;
+}
+
+// Plant Creation Section
+function makePlant(){
+    // Stem
+    const stemShape = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 6);
+    const stemFace = new THREE.MeshStandardMaterial({color:0x228b22});
+    const stem = new THREE.Mesh(stemShape, stemFace);
+
+    //Flower
+    const flowerShape = new THREE.SphereGeometry(0.4, 8, 8);
+    const flowerFace = new THREE.MeshStandardMaterial({color:0xff69b4});
+    const flower = new THREE.Mesh(flowerShape, flowerFace);
+    
+    // Flower position being placed above the stem
+    flower.position.y = 1;
+
+    // Plant group
+    const plant = new THREE.Group();
+    plant.add(stem);
+    plant.add(flower);
+    return plant;
+}
+
+// Bush Creation Section
+function makeBush(){
+    // Stem
+    const bushShape = new THREE.SphereGeometry(2, 8, 3);
+    const bushFace = new THREE.MeshStandardMaterial({color:0x006400, transparent: true, opacity:0.7});
+    const bush = new THREE.Mesh(bushShape, bushFace);
+
+    const bushy = new THREE.Group();
+    bushy.add(bush);
+    return bushy;
+}
+//====================================================================================================
+
+//----------------------------------------------------------------------------------------------------
+// Procedure Generation Section
+for(let i = 0; i <= 100; i++){
+    const trees = makeTree();
+
+    // Random x/z coordinates between -200 and 200
+    trees.position.x = Math.random() * 400-200;
+    trees.position.z = Math.random() * 400-200;
+
+    // Random size
+    const size = Math.random() * 1.5 + 0.5;
+    trees.scale.set(size, size, size);
+
+    scene.add(trees);
+}
+
+// Plant Generation Section
+for(let i = 0; i <= 100; i++){
+    const plants = makePlant();
+
+    // Random x/z coordinates between -200 and 200
+    plants.position.x = Math.random() * 400-200;
+    plants.position.z = Math.random() * 400-200;
+
+    // Random size
+    const size = Math.random() * 1.5 + 0.5;
+    plants.scale.set(size, size, size);
+    scene.add(plants);
+}
+
+//Bush Generation section
+for(let i = 0; i <= 100; i++){
+    const bushes = makeBush();
+    
+    // Random x/z coordinates between -200 and 200
+    bushes.position.x = Math.random() * 400-200;
+    bushes.position.z = Math.random() * 400-200;
+
+    // Random size
+    const size = Math.random() * 1.0 + 0.5;
+    bushes.scale.set(size, size, size);
+    scene.add(bushes);
+}
+//----------------------------------------------------------------------------------------------------
+
+// Camera Placement
+let angle = 0;
+
+// Camera Orbit
+function animate(){
+    requestAnimationFrame(animate);
+
+    // Adds a small constant value in each frame (0.002 being the speed of the animation)
+    angle +=0.002;
+
+    // Sets the camera's x and z position using trigonometry (Math.Sin calculates the sin of the given angle)
+    // * 60 acts as the radius of the artc which the camera is moving
+    camera.position.x = Math.sin(angle) * 60;
+    camera.position.z = Math.cos(angle) * 60;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+// Resize handler (This is mainly for adaptibility to changes in window size to avoid visual distortions)
+window.addEventListener("resize",()=>{
+
+// Updates the camera aspect ratio
+camera.aspect = window.innerWidth/window.innerHeight;
+
+// Calls the updateProjectMatrix for the internall change
+camera.updateProjectionMatrix();
+
+// Updates renderer size
+renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+</script>
+</body>
+</html>
